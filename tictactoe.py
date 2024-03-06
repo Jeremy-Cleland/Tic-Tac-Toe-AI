@@ -1,8 +1,11 @@
 """
 Tic Tac Toe Player
+
+This module implements a Tic Tac Toe game player that uses the Minimax algorithm to determine the optimal move.
 """
 import math
 
+# Constants represent the players and the state of an empty cell.
 X = "X"
 O = "O"
 EMPTY = None
@@ -10,88 +13,75 @@ EMPTY = None
 
 def initial_state():
     """
-    Returns starting state of the board.
+    Initializes the game board to a 3x3 grid of None values, representing an empty board at the start of the game.
     """
     return [[None, None, None], [None, None, None], [None, None, None]]
 
 
 def player(board):
     """
-    Returns player who has the next turn on a board.
+    Determines the current player of the Tic Tac Toe game.
 
-    The function calculates the number of 'X' and 'O' on the board.
-    If the counts are equal, or there are fewer 'X's, it's 'X's turn.
-    Otherwise, it's 'O's turn.
-
-    Args:
-    board (list): The current state of the Tic Tac Toe board, a 3x3 list of lists.
-
-    Returns:
-    str: 'X' or 'O' indicating which player's turn it is.
-    """
-    # Count 'X' on the board using sum and list comprehension
-    # The inner list comprehension creates a list of boolean values,
-    # where True (counted as 1) if the cell is 'X', and False (counted as 0) otherwise.
-    # The sum function then adds up these values to count all 'X's.
-    cnt_X = sum(cell == "X" for row in board for cell in row)
-
-    # Similarly, count 'O' on the board
-    cnt_O = sum(cell == "O" for row in board for cell in row)
-
-    # If there are as many 'X's as 'O's or fewer, it's 'X's turn, because 'X' starts the game.
-    # If there are more 'X's than 'O's, it's 'O's turn.
-    # This logic ensures players alternate turns starting with 'X'.
-    return "X" if cnt_X <= cnt_O else "O"
-
-
-def actions(board):
-    """
-    Identifies and returns all the possible actions on a Tic Tac Toe board or an appropriate value for terminal boards.
-
-    Actions are represented as tuples (i, j), where i is the row index and j is the column index
-    of an empty spot on the board. Only empty cells (those without 'X' or 'O') can be chosen for a new move.
-
-    If the board is terminal (the game is over), any return value is acceptable. Here, we choose to return an empty set.
+    The current player is determined based on the number of 'X's and 'O's on the board. If there are as many 'X's as 'O's or fewer, it's 'X's turn, because 'X' starts the game. If there are more 'X's than 'O's, it's 'O's turn. This logic ensures players alternate turns starting with 'X'.
 
     Args:
     board (list): A 3x3 matrix representing the current state of the board, with each cell containing 'X', 'O', or None.
 
     Returns:
-    set: A set of tuples, each representing a possible action (move) on the board, or an empty set if the board is terminal.
+    str: The player to move, either 'X' or 'O'.
     """
-    # If the board is terminal, return an empty set indicating no further actions are possible.
+    # Count 'X' on the board
+    cnt_X = sum(cell == "X" for row in board for cell in row)
+
+    # Count 'O' on the board
+    cnt_O = sum(cell == "O" for row in board for cell in row)
+
+    # If there are as many 'X's as 'O's or fewer, it's 'X's turn, because 'X' starts the game.
+    return "X" if cnt_X <= cnt_O else "O"
+
+
+def actions(board):
+    """
+    Returns a set of all possible actions (i.e., available cells) on the board.
+
+    The function first checks if the board is terminal (i.e., the game is over), in which case it returns an empty set. If the game is still ongoing, it returns a set of all empty cells on the board.
+
+    Args:
+    board (list): The current state of the Tic Tac Toe board as a 3x3 list of lists.
+
+    Returns:
+    set: A set of all possible actions (i, j) on the board, where i is the row index and j is the column index.
+    """
+
+    # If the board is terminal, return an empty set.
     if terminal(board):
         return set()
 
-    # For a non-terminal board, return all possible actions (empty cells).
+    # Otherwise, return a set of all empty cells on the board.
     return {(i, j) for i in range(3) for j in range(3) if board[i][j] is None}
 
 
 def result(board, action):
     """
-    Calculates and returns the new board state resulting from a specific move.
+    Returns the board that results from making a move (i.e., placing the current player's symbol) on the board.
 
-    This function first validates the proposed action to ensure it's a legal move,
-    then applies the move to a copy of the board, ensuring the original board remains unchanged.
+    The function first checks if the proposed action is valid (i.e., the cell is empty). If the action is valid, the function returns a new board with the proposed action applied. If the action is invalid, the function raises an exception.
 
     Args:
     board (list): The current state of the Tic Tac Toe board as a 3x3 list of lists.
-    action (tuple): The proposed move as a tuple (i, j), where i is the row index and j is the column index.
+    action (tuple): The proposed action (i, j) on the board, where i is the row index and j is the column index.
 
     Returns:
-    list: A new board state reflecting the result of the move.
-
-    Raises:
-    Exception: If the proposed action is not valid (i.e., if the cell is not empty).
+    list: A new board that results from applying the proposed action.
     """
-    # Validate the action
+
+    # Ensure the proposed action is valid (i.e., the cell is empty)
     if action not in actions(board):
         raise Exception(
             "Invalid Action: The cell is already occupied or out of bounds."
         )
 
-    # Deep copy the board to avoid modifying the original
-    # Using list comprehension to copy each row ensures that we get a new list object for each row
+    # Create a deep copy of the board to avoid modifying the original board.
     new_board = [row[:] for row in board]
 
     # Determine the current player's symbol ('X' or 'O')
@@ -105,33 +95,33 @@ def result(board, action):
 
 def winner(board):
     """
-    Determines the winner of the Tic Tac Toe game by checking all possible winning combinations.
+    Determines the winner of the Tic Tac Toe game.
 
-    The function checks each row, column, and both diagonals for three identical symbols ('X' or 'O'),
-    indicating a win. If such a line is found, the function returns the winning symbol. If there is
-    no winner yet, it returns None.
+    The function checks the board for a winner by examining each row, column, and diagonal for three consecutive 'X's or 'O's. If a winner is found, the function returns 'X' or 'O'. If no winner is found, the function returns None.
 
     Args:
     board (list): The current state of the Tic Tac Toe board, represented as a 3x3 list of lists.
 
     Returns:
-    str: 'X' or 'O' indicating the winner, if there is one. None if the game is still ongoing or if it's a tie.
+    str: The winner of the game, either 'X' or 'O'. If no winner is found, returns None.
     """
+    # Define the possible winning lines on the board: rows, columns, and diagonals.
     lines = []
 
-    # Rows: Already in the desired format, just extend the lines list with the board itself.
+    # Rows: Add each row as a new list in the lines list.
     lines.extend(board)
 
-    # Columns: Create new lists representing each column and add them to the lines list.
+    # Columns: Add each column as a new list in the lines list.
     lines.extend([[row[i] for row in board] for i in range(3)])
-    # Diagonals: Two diagonals are possible, from top-left to bottom-right and top-right to bottom-left.
-    # Add each diagonal as a new list in the lines list.
-    lines.append([board[i][i] for i in range(3)])  # Top-left to bottom-right diagonal
-    lines.append(
+
+    # Diagonals: Add the two diagonals as new lists in the lines list.
+    lines.append([board[i][i] for i in range(3)])
+
+    lines.append(  # Top-left to bottom-right diagonal
         [board[i][2 - i] for i in range(3)]
     )  # Top-right to bottom-left diagonal
 
-    # Check each line for a win condition: three 'X's or three 'O's.
+    # Check each line for a winner.
     for line in lines:
         if line == ["X", "X", "X"]:
             return "X"  # 'X' wins
@@ -144,27 +134,25 @@ def winner(board):
 
 def terminal(board):
     """
-    Determines whether the Tic Tac Toe game has ended.
+    Determines if the Tic Tac Toe game is over.
 
-    The game is considered over if there is a winner or if all cells on the board are filled,
-    indicating either a victory or a tie. This function checks for these conditions in order.
+    The game is over if there is a winner or if the board is fully occupied (i.e., a tie). If the game is over, the function returns True; otherwise, it returns False.
 
     Args:
     board (list): The current state of the Tic Tac Toe board, represented as a 3x3 list of lists.
 
     Returns:
-    bool: True if the game is over, either by victory or tie. False if the game can still continue.
+    bool: True if the game is over, False otherwise.
     """
-    # First, check if there is a winner. The game ends immediately if either 'X' or 'O' wins.
+    # Check if there's a winner. If so, the game is over.
     if winner(board) is not None:
-        return True  # Game is over due to a win.
+        return True
 
-    # If there's no winner, check if the board is fully occupied (a tie situation). Iterate over each cell on the board; if any cell is None (empty), the game is still ongoing.
+    # Check if the board is fully occupied. If so, the game is over.
     for i in range(3):
         for j in range(3):
-            if (
-                board[i][j] == None
-            ):  # Found an empty cell, so the game can still continue.
+            # If an empty cell is found, the game is not over.
+            if board[i][j] is None:
                 return False
 
     # If no empty cell is found and there's no winner, the game is a tie, thus over.
@@ -173,46 +161,42 @@ def terminal(board):
 
 def utility(board):
     """
-    Evaluates and returns the utility value of the Tic Tac Toe board state.
+    Returns the utility value of the current board state from the perspective of the 'X' player.
 
-    In the context of Tic Tac Toe, the utility value is a numerical representation of the game's outcome from the perspective of player 'X':
-    - If 'X' wins, the utility is 1, indicating a favorable outcome for 'X'.
-    - If 'O' wins, the utility is -1, indicating a favorable outcome for 'O' and thus unfavorable for 'X'.
-    - If the game is a tie or still in progress (no winner), the utility is 0, indicating a neutral outcome.
-
-    This function is typically used in the context of game theory and AI decision-making, such as evaluating terminal states in the Minimax algorithm.
+    The utility value is determined based on the outcome of the game. If 'X' wins, the utility value is 1. If 'O' wins, the utility value is -1. If the game is a tie, the utility value is 0.
 
     Args:
     board (list): The current state of the Tic Tac Toe board, represented as a 3x3 list of lists.
 
     Returns:
-    int: The utility value of the board state, either 1, -1, or 0.
+    int: The utility value of the current board state from the perspective of the 'X' player.
     """
-    # First, determine if there is a winner and assign utility values accordingly.
-    current_winner = winner(board)  # Check the board state for a winner.
 
+    # Determine the winner of the game.
+    current_winner = winner(board)
+
+    # Return the utility value based on the winner.
     if current_winner == "X":
         return 1  # 'X' has won, so the utility is favorable for 'X'.
     elif current_winner == "O":
-        return (
-            -1
-        )  # 'O' has won, so the utility is unfavorable for 'X' (favorable for 'O').
-    else:
-        return 0  # No winner yet or a tie, indicating a neutral outcome.
+        return -1  # 'O' has won, so the utility is unfavorable for 'X'.
+        return 0  # The game is a tie, so the utility is neutral.
 
 
 def minimax(board):
     """
-    Executes the Minimax algorithm to determine the optimal move for the current player on a Tic Tac Toe board.
+    Returns the optimal action for the current player on the board using the Minimax algorithm.
+
+    The Minimax algorithm is a recursive algorithm that seeks to maximize the utility value for 'X' and minimize the utility value for 'O'. The algorithm considers all possible moves and their potential outcomes to determine the best move for the current player.
 
     Args:
-    board: The current state of the game board as a 2D list.
+    board (list): The current state of the Tic Tac Toe board, represented as a 3x3 list of lists.
 
     Returns:
-    tuple: The optimal move (i, j) for the current player.
+    tuple: The optimal action (i, j) for the current player, where i is the row index and j is the column index.
     """
 
-    # Terminal state check: If the game is over, return None as no moves are possible.
+    # Return None if the game is over.
     if terminal(board):
         return None
 
@@ -226,9 +210,11 @@ def minimax(board):
         Returns:
         tuple: The maximum utility value and the corresponding move leading to that value.
         """
+
         # Check for terminal state and return the utility value if the game has ended.
         if terminal(board):
             return utility(board), None
+
         v = -math.inf  # Initialize v to the lowest possible value.
         best_move = None
         for action in actions(board):
@@ -236,7 +222,7 @@ def minimax(board):
             score, _ = min_value(result(board, action))
             if score > v:
                 v, best_move = score, action
-                if v == 1:  # Break early if the best possible outcome is found.
+                if v == 1:  # Break early if the best possible outcome for 'X' is found.
                     break
         return v, best_move
 
@@ -250,6 +236,7 @@ def minimax(board):
         Returns:
         tuple: The minimum utility value and the corresponding move leading to that value.
         """
+
         # Check for terminal state and return the utility value if the game has ended.
         if terminal(board):
             return utility(board), None
@@ -266,7 +253,7 @@ def minimax(board):
                     break
         return v, best_move
 
-    # Start the Minimax algorithm based on the current player.
+    # Determine the current player and call the appropriate function to calculate the optimal move.
     currentPlayer = player(board)
     if currentPlayer == X:
         _, action = max_value(board)  # For 'X', seek to maximize the utility.
