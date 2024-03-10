@@ -2,9 +2,7 @@
 
 ## Overview
 
-This project implements an intelligent Tic Tac Toe game using Python, designed for a graduate program at the University of Michigan. The game features a graphical user interface (GUI) powered by Pygame and employs the Minimax algorithm to enable an AI opponent that plays optimally. This README provides essential information on setting up the game environment, running the game, and a brief theoretical background on the game theory principles underlying the AI's strategy.
-
-For more information, see the [Title Page](title_page.md).
+This project implements an intelligent Tic Tac Toe game using Python, designed for a graduate program at the University of Michigan. The game features a graphical user interface (GUI) powered by Pygame and employs the Minimax algorithm to enable an AI opponent that plays optimally. This README provides essential information on setting up the game environment and running the game, as well as a brief theoretical background on the game theory principles underlying the AI's strategy.
 
 ## Installation and Setup
 
